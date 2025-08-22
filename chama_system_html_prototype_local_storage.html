@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chama Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0f172a;         /* slate-900 */
+      --panel:#111827;      /* gray-900 */
+      --muted:#1f2937;      /* gray-800 */
+      --text:#e5e7eb;       /* gray-200 */
+      --subtle:#94a3b8;     /* slate-400 */
+      --brand:#22c55e;      /* green-500 */
+      --brand-2:#16a34a;    /* green-600 */
+      --danger:#ef4444;     /* red-500 */
+      --warn:#f59e0b;       /* amber-500 */
+      --info:#3b82f6;       /* blue-500 */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#0b1022 0%,#0f172a 100%);color:var(--text)}
+    .container{max-width:1200px;margin:0 auto;padding:24px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:40px;height:40px;border-radius:12px;background:radial-gradient(circle at 30% 30%, #34d399, #16a34a 60%, #064e3b);box-shadow:0 10px 30px rgba(34,197,94,.25)}
+    h1{font-size:22px;margin:0}
+    .tag{font-size:12px;color:var(--subtle)}
+    .card{background:rgba(17,24,39,.75);backdrop-filter: blur(8px);border:1px solid rgba(255,255,255,.05);border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.3)}
+    .login{max-width:420px;margin:80px auto;padding:28px}
+    label{display:block;font-size:13px;color:var(--subtle);margin-bottom:8px}
+    input,select,button,textarea{font-family:inherit;font-size:14px}
+    .input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:#0b1220;color:var(--text);outline:none}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:var(--muted);color:var(--text);cursor:pointer}
+    .btn:hover{filter:brightness(1.1)}
+    .btn.brand{background:linear-gradient(135deg,var(--brand),var(--brand-2));border:none;font-weight:600}
+    .btn.ghost{background:transparent}
+    .btn.danger{background:var(--danger);border:none}
+    .btn.warn{background:var(--warn);border:none}
+    .btn.info{background:var(--info);border:none}
+    nav.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+    .tab{padding:10px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.1);cursor:pointer;color:var(--subtle)}
+    .tab.active{background:linear-gradient(135deg,#1f2937,#0b1220);color:var(--text);border-color:rgba(255,255,255,.25)}
+    .grid{display:grid;grid-template-columns:1fr;gap:16px}
+    table{width:100%;border-collapse:collapse;background:#0b1220;border-radius:12px;overflow:hidden}
+    th,td{padding:12px 10px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;font-size:13px}
+    th{background:#0d1526;color:#a7b1c2;font-weight:600;position:sticky;top:0}
+    tbody tr:hover{background:#0f1830}
+    .pill{padding:4px 8px;border-radius:999px;font-size:12px}
+    .success{background:rgba(34,197,94,.15);color:#86efac}
+    .warnPill{background:rgba(245,158,11,.15);color:#fcd34d}
+    .dangerPill{background:rgba(239,68,68,.15);color:#fca5a5}
+    .muted{color:var(--subtle)}
+    .section{padding:18px}
+    .section h2{margin:0 0 12px;font-size:18px}
+    .footer{margin-top:24px;font-size:12px;color:#94a3b8}
+    .hide{display:none}
+    .notice{padding:10px 12px;background:#0b1220;border:1px dashed rgba(255,255,255,.15);border-radius:12px;color:#c7d2fe}
+    .split{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+    /* Sidebar styles */
+    .sidebar {
+      background: rgba(17, 24, 39, 0.9);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 24px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 250px;
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+    }
+    .sidebar.hide {
+      transform: translateX(-100%);
+    }
+    .menu-btn {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 16px;
+      margin: 12px 0;
+      padding: 10px 0;
+      text-align: left;
+      width: 100%;
+      transition: background 0.3s ease;
+    }
+    .menu-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    @media(max-width:980px){.split{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>Chama Manager</h1>
+          <div class="tag">Kenya-ready, offline first</div>
+        </div>
+      </div>
+      <!-- Menus: hidden by default, shown after login -->
+      <nav class="tabs" id="mainMenu" style="display:none;">
+        <button class="tab active">🏠 Dashboard</button>
+        <button class="tab">👥 Members</button>
+        <button class="tab">💰 Contributions</button>
+        <button class="tab">📊 Reports</button>
+        <!-- Add more menu items as needed -->
+      </nav>
+    </header>
+
+    <!-- Add Sidebar -->
+    <aside class="sidebar">
+      <nav>
+        <button class="menu-btn" data-tab="dashboard">🏠 Dashboard</button>
+        <button class="menu-btn" data-tab="members">👥 Members</button>
+        <button class="menu-btn" data-tab="contributions">💰 Contributions</button>
+        <button class="menu-btn" data-tab="reports">📊 Reports</button>
+        <!-- Add more menu items as needed -->
+      </nav>
+    </aside>
+
+    <!-- LOGIN -->
+    <div id="loginView" class="login card">
+      <h2 style="margin:0 0 12px">Admin Login</h2>
+      <!-- <div class="notice" style="margin-bottom:12px">Demo credentials — <b>Username:</b> <code>admin</code> · <b>Password:</b> <code>admin123</code></div> -->
+      <label>Username</label>
+      <input id="loginUser" class="input" placeholder="admin" />
+      <label style="margin-top:10px">Password</label>
+      <input id="loginPass" class="input" type="password" placeholder="admin123" />
+      <div class="actions" style="margin-top:14px">
+        <button class="btn brand" id="loginBtn">Sign in</button>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div id="appView" class="hide">
+      <nav class="tabs">
+        <div class="tab active" data-tab="dashboard">Dashboard</div>
+        <div class="tab" data-tab="members">Members</div>
+        <div class="tab" data-tab="contributions">Contributions</div>
+        <div class="tab" data-tab="loans">Loans</div>
+        <div class="tab" data-tab="repayments">Repayments</div>
+        <div class="tab" data-tab="statements">Statements</div>
+        <div class="tab" data-tab="reports">Reports</div>
+        <div class="tab" data-tab="settings">Settings</div>
+      </nav>
+
+      <div id="dashboard" class="grid">
+        <div class="section card split">
+          <div>
+            <h2>Overview</h2>
+            <div class="row">
+              <div class="notice">
+                <div class="muted">Total Members</div>
+                <div id="kpiMembers" style="font-size:24px;font-weight:700">0</div>
+              </div>
+              <div class="notice">
+                <div class="muted">Total Contributions</div>
+                <div id="kpiContrib" style="font-size:24px;font-weight:700">0</div>
+              </div>
+              <div class="notice">
+                <div class="muted">Loans Outstanding</div>
+                <div id="kpiOutstanding" style="font-size:24px;font-weight:700">0</div>
+              </div>
+              <div class="notice">
+                <div class="muted">Cash On Hand</div>
+                <div id="kpiCash" style="font-size:24px;font-weight:700">0</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h2>Quick Actions</h2>
+            <div class="actions">
+              <button class="btn brand" onclick="showTab('members')">Add Member</button>
+              <button class="btn info" onclick="showTab('contributions')">Record Contribution</button>
+              <button class="btn warn" onclick="showTab('loans')">Issue Loan</button>
+              <button class="btn" onclick="showTab('repayments')">Record Repayment</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEMBERS -->
+      <div id="members" class="grid hide">
+        <div class="section card">
+          <h2>Members</h2>
+          <div class="row">
+            <div>
+              <label>Full Name</label>
+              <input id="mName" class="input" placeholder="Jane Doe" />
+            </div>
+            <div>
+              <label>Member ID</label>
+              <input id="mId" class="input" placeholder="M001" />
+            </div>
+            <div>
+              <label>Phone</label>
+              <input id="mPhone" class="input" placeholder="0712 345 678" />
+            </div>
+            <div>
+              <label>Email</label>
+              <input id="mEmail" class="input" placeholder="jane@example.com" />
+            </div>
+            <div>
+              <label>Join Date</label>
+              <input id="mJoin" type="date" class="input" />
+            </div>
+          </div>
+          <div class="actions" style="margin-top:12px">
+            <button class="btn brand" id="addMemberBtn">Save Member</button>
+            <button class="btn ghost" id="clearMemberBtn">Clear</button>
+          </div>
+        </div>
+        <div class="section card">
+          <div class="actions" style="justify-content:space-between">
+            <h2 style="margin:0">Members List</h2>
+            <div>
+              <button class="btn" onclick="exportCSV('members')">Export CSV</button>
+            </div>
+          </div>
+          <table id="membersTable"></table>
+        </div>
+      </div>
+
+      <!-- CONTRIBUTIONS -->
+      <div id="contributions" class="grid hide">
+        <div class="section card">
+          <h2>Record Monthly Contribution</h2>
+          <div class="row">
+            <div>
+              <label>Member</label>
+              <select id="cMember" class="input"></select>
+            </div>
+            <div>
+              <label>Month</label>
+              <input id="cMonth" class="input" type="month" />
+            </div>
+            <div>
+              <label>Amount</label>
+              <input id="cAmount" class="input" type="number" min="0" step="0.01" placeholder="1000" />
+            </div>
+            <div>
+              <label>Date Received</label>
+              <input id="cDate" class="input" type="date" />
+            </div>
+            <div>
+              <label>Reference</label>
+              <input id="cRef" class="input" placeholder="M-Pesa Ref" />
+            </div>
+          </div>
+          <div class="actions" style="margin-top:12px">
+            <button class="btn brand" id="addContributionBtn">Save Contribution</button>
+            <button class="btn ghost" id="clearContributionBtn">Clear</button>
+          </div>
+        </div>
+        <div class="section card">
+          <div class="actions" style="justify-content:space-between">
+            <h2 style="margin:0">Contributions</h2>
+            <div>
+              <button class="btn" onclick="exportCSV('contributions')">Export CSV</button>
+            </div>
+          </div>
+          <table id="contribTable"></table>
+        </div>
+      </div>
+
+      <!-- LOANS -->
+      <div id="loans" class="grid hide">
+        <div class="section card">
+          <h2>Issue Loan</h2>
+          <div class="row">
+            <div>
+              <label>Member</label>
+              <select id="lMember" class="input"></select>
+            </div>
+            <div>
+              <label>Principal</label>
+              <input id="lPrincipal" class="input" type="number" min="0" step="0.01" placeholder="10000" />
+            </div>
+            <div>
+              <label>Interest Rate (% per month)</label>
+              <input id="lRate" class="input" type="number" min="0" step="0.01" placeholder="5" />
+            </div>
+            <div>
+              <label>Term (months)</label>
+              <input id="lTerm" class="input" type="number" min="1" step="1" placeholder="6" />
+            </div>
+            <div>
+              <label>Start Date</label>
+              <input id="lStart" class="input" type="date" />
+            </div>
+            <div>
+              <label>Purpose (optional)</label>
+              <input id="lPurpose" class="input" placeholder="School fees" />
+            </div>
+          </div>
+          <div class="actions" style="margin-top:12px">
+            <button class="btn warn" id="issueLoanBtn">Issue Loan</button>
+            <button class="btn ghost" id="clearLoanBtn">Clear</button>
+          </div>
+        </div>
+        <div class="section card">
+          <div class="actions" style="justify-content:space-between">
+            <h2 style="margin:0">Loans</h2>
+            <div>
+              <button class="btn" onclick="exportCSV('loans')">Export CSV</button>
+            </div>
+          </div>
+          <table id="loansTable"></table>
+        </div>
+      </div>
+
+      <!-- REPAYMENTS -->
+      <div id="repayments" class="grid hide">
+        <div class="section card">
+          <h2>Record Repayment</h2>
+          <div class="row">
+            <div>
+              <label>Loan</label>
+              <select id="rLoan" class="input"></select>
+            </div>
+            <div>
+              <label>Amount</label>
+              <input id="rAmount" class="input" type="number" min="0" step="0.01" placeholder="3000" />
+            </div>
+            <div>
+              <label>Date</label>
+              <input id="rDate" class="input" type="date" />
+            </div>
+            <div>
+              <label>Reference</label>
+              <input id="rRef" class="input" placeholder="M-Pesa Ref" />
+            </div>
+          </div>
+          <div class="actions" style="margin-top:12px">
+            <button class="btn" id="addRepaymentBtn">Save Repayment</button>
+            <button class="btn ghost" id="clearRepaymentBtn">Clear</button>
+          </div>
+        </div>
+        <div class="section card">
+          <div class="actions" style="justify-content:space-between">
+            <h2 style="margin:0">Repayments</h2>
+            <div>
+              <button class="btn" onclick="exportCSV('repayments')">Export CSV</button>
+            </div>
+          </div>
+          <table id="repayTable"></table>
+        </div>
+      </div>
+
+      <!-- STATEMENTS -->
+      <div id="statements" class="grid hide">
+        <div class="section card">
+          <h2>Member Statement</h2>
+          <div class="row">
+            <div>
+              <label>Member</label>
+              <select id="sMember" class="input"></select>
+            </div>
+            <div>
+              <label>From</label>
+              <input id="sFrom" type="date" class="input" />
+            </div>
+            <div>
+              <label>To</label>
+              <input id="sTo" type="date" class="input" />
+            </div>
+          </div>
+          <div class="actions" style="margin-top:12px">
+            <button class="btn brand" id="genStatementBtn">Generate</button>
+            <button class="btn" id="printStatementBtn">Print / PDF</button>
+            <button class="btn" id="exportStatementBtn">Export CSV</button>
+          </div>
+        </div>
+        <div class="section card">
+          <div class="actions" style="justify-content:space-between">
+            <h2 style="margin:0">Statement</h2>
+            <div class="muted" id="statementSummary"></div>
+          </div>
+          <table id="statementTable"></table>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div id="reports" class="grid hide">
+        <div class="section card">
+          <h2>Admin Reports</h2>
+          <div class="row">
+            <div>
+              <label>Month</label>
+              <input id="repMonth" type="month" class="input" />
+            </div>
+            <div>
+              <label>Member (optional)</label>
+              <select id="repMember" class="input"></select>
+            </div>
+          </div>
+          <div class="actions" style="margin-top:12px">
+            <button class="btn brand" id="genReportBtn">Generate Report</button>
+            <button class="btn" id="exportReportBtn">Export CSV</button>
+            <button class="btn" id="printReportBtn">Print / PDF</button>
+          </div>
+        </div>
+        <div class="section card">
+          <div class="actions" style="justify-content:space-between"><h2 style="margin:0">Report</h2></div>
+          <table id="reportTable"></table>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div id="settings" class="grid hide">
+        <div class="section card">
+          <h2>Settings</h2>
+          <div class="row">
+            <div>
+              <label>Default Monthly Contribution (for reference)</label>
+              <input id="setMonthly" class="input" type="number" min="0" step="0.01" placeholder="1000" />
+            </div>
+            <div>
+              <label>Penalty per late month (optional)</label>
+              <input id="setPenalty" class="input" type="number" min="0" step="0.01" placeholder="0" />
+            </div>
+          </div>
+          <div class="actions" style="margin-top:12px">
+            <button class="btn brand" id="saveSettingsBtn">Save Settings</button>
+          </div>
+          <div class="notice" style="margin-top:12px">Data is saved in your browser using <b>localStorage</b>. Use Backup/Restore to move data between devices or share with your team.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">© <span id="year"></span> Chama Manager · Designed by Olem Jerry</div>
+  </div>
+
+  <script>
+    /* ===================== UTIL & STORAGE ===================== */
+    const DB_KEY = 'chama_db_v1';
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+    const fmt = (n) => new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 2 }).format(Number(n||0));
+    const fmtDate = (d) => d ? new Date(d).toISOString().slice(0,10) : '';
+
+    const uid = (p='') => p + Math.random().toString(36).slice(2,8) + Date.now().toString(36).slice(-4);
+
+    const nowISO = () => new Date().toISOString().slice(0,10);
+
+    function loadDB(){
+      const data = JSON.parse(localStorage.getItem(DB_KEY) || '{}');
+      return {
+        members: [],
+        contributions: [],
+        loans: [],
+        repayments: [],
+        settings: { monthly: 0, penalty: 0 },
+        ...data,
+      };
+    }
+    function saveDB(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); refreshAll(); }
+
+    function backup(){
+      const blob = new Blob([JSON.stringify(loadDB(), null, 2)], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `chama-backup-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    }
+    function restore(file){
+      const reader = new FileReader();
+      reader.onload = () => { localStorage.setItem(DB_KEY, reader.result); refreshAll(); alert('Restore complete.'); };
+      reader.readAsText(file);
+    }
+
+    /* ===================== AUTH (DEMO) ===================== */
+    const DEMO_USER = { username:'admin', password:'admin123' };
+    function isAuthed(){ return sessionStorage.getItem('chama_authed') === '1'; }
+    function setAuthed(v){ if(v) sessionStorage.setItem('chama_authed','1'); else sessionStorage.removeItem('chama_authed'); toggleViews(); }
+
+    function toggleViews(){
+      $('#loginView').classList.toggle('hide', isAuthed());
+      $('#appView').classList.toggle('hide', !isAuthed());
+      if(isAuthed()) refreshAll();
+    }
+
+    // Simulated authentication check
+    function isLoggedIn() {
+      return sessionStorage.getItem('chama_authed') === '1';
+    }
+
+    function showMenusAfterLogin() {
+      document.getElementById('mainMenu').style.display = 'flex';
+    }
+    function hideMenusOnLanding() {
+      document.getElementById('mainMenu').style.display = 'none';
+    }
+
+    // On page load, show/hide menus based on login status
+    window.onload = function() {
+      // ...existing code...
+      if (isLoggedIn()) {
+        showMenusAfterLogin();
+      } else {
+        hideMenusOnLanding();
+      }
+      // ...existing code...
+    };
+
+    // Example: After successful login, call this function
+    function onLoginSuccess() {
+      sessionStorage.setItem('chama_authed', '1');
+      showMenusAfterLogin();
+      document.getElementById('sidebarMenu').style.display = 'block';
+      // ...show dashboard, hide login form, etc...
+    }
+
+    // Example: On logout
+    function onLogout() {
+      sessionStorage.removeItem('chama_authed');
+      hideMenusOnLanding();
+      document.getElementById('sidebarMenu').style.display = 'none';
+      // ...show login form, hide dashboard, etc...
+    }
+
+    /* ===================== RENDER HELPERS ===================== */
+    function setOptions(sel, options, placeholder='Select...'){
+      const el = $(sel);
+      const html = ['<option value="">'+placeholder+'</option>'].concat(options.map(o=>`<option value="${o.value}">${o.label}</option>`)).join('');
+      el.innerHTML = html;
+    }
+
+    function table(el, columns, rows){
+      const thead = `<thead><tr>${columns.map(c=>`<th>${c.label}</th>`).join('')}</tr></thead>`;
+      const tbody = `<tbody>${rows.map(r=>`<tr>${columns.map(c=>`<td>${c.render?c.render(r[c.key], r): (r[c.key] ?? '')}</td>`).join('')}</tr>`).join('')}</tbody>`;
+      el.innerHTML = thead + tbody;
+    }
+
+    /* ===================== CRUD: MEMBERS ===================== */
+    function addMember(){
+      const db = loadDB();
+      const member = {
+        id: ($('#mId').value || uid('M')).toUpperCase(),
+        name: $('#mName').value.trim(),
+        phone: $('#mPhone').value.trim(),
+        email: $('#mEmail').value.trim(),
+        joinDate: $('#mJoin').value || nowISO(),
+      };
+      if(!member.name){ alert('Name is required'); return; }
+      if(db.members.some(m=>m.id===member.id)){
+        // update
+        db.members = db.members.map(m=> m.id===member.id? {...m, ...member}: m);
+      } else {
+        db.members.push(member);
+      }
+      saveDB(db);
+      clearMemberForm();
+    }
+    function clearMemberForm(){ ['#mId','#mName','#mPhone','#mEmail','#mJoin'].forEach(s=>$(s).value=''); }
+
+    function deleteMember(id){
+      if(!confirm('Delete member and related records?')) return;
+      const db = loadDB();
+      db.members = db.members.filter(m=>m.id!==id);
+      db.contributions = db.contributions.filter(c=>c.memberId!==id);
+      db.loans = db.loans.filter(l=>l.memberId!==id);
+      db.repayments = db.repayments.filter(r=>db.loans.find(l=>l.id===r.loanId)?.memberId !== id);
+      saveDB(db);
+    }
+
+    /* ===================== CONTRIBUTIONS ===================== */
+    function addContribution(){
+      const db = loadDB();
+      const c = {
+        id: uid('C'),
+        memberId: $('#cMember').value,
+        month: $('#cMonth').value, // YYYY-MM
+        amount: Number($('#cAmount').value||0),
+        date: $('#cDate').value || nowISO(),
+        ref: $('#cRef').value.trim(),
+      };
+      if(!c.memberId || !c.month || !c.amount){ alert('Member, month and amount required'); return; }
+      db.contributions.push(c);
+      saveDB(db);
+      ['#cMember','#cMonth','#cAmount','#cDate','#cRef'].forEach(s=>$(s).value='');
+    }
+
+    /* ===================== LOANS ===================== */
+    function issueLoan(){
+      const db = loadDB();
+      const l = {
+        id: uid('L'),
+        memberId: $('#lMember').value,
+        principal: Number($('#lPrincipal').value||0),
+        rate: Number($('#lRate').value||0), // % per month (simple interest)
+        term: Number($('#lTerm').value||1), // months
+        start: $('#lStart').value || nowISO(),
+        purpose: $('#lPurpose').value.trim(),
+        status: 'Active'
+      };
+      if(!l.memberId || !l.principal || !l.term){ alert('Member, principal and term are required'); return; }
+      db.loans.push(l);
+      saveDB(db);
+      ['#lMember','#lPrincipal','#lRate','#lTerm','#lStart','#lPurpose'].forEach(s=>$(s).value='');
+    }
+
+    function addRepayment(){
+      const db = loadDB();
+      const r = {
+        id: uid('R'),
+        loanId: $('#rLoan').value,
+        amount: Number($('#rAmount').value||0),
+        date: $('#rDate').value || nowISO(),
+        ref: $('#rRef').value.trim(),
+      };
+      if(!r.loanId || !r.amount){ alert('Loan and amount required'); return; }
+      db.repayments.push(r);
+      saveDB(db);
+      ['#rLoan','#rAmount','#rDate','#rRef'].forEach(s=>$(s).value='');
+    }
+
+    /* ===================== COMPUTATIONS ===================== */
+    function memberById(id){ return loadDB().members.find(m=>m.id===id); }
+    function loanById(id){ return loadDB().loans.find(l=>l.id===id); }
+
+    function loanTotalDue(loan){
+      // Simple interest total: principal + (principal * rate% * term)
+      const interest = loan.principal * (loan.rate/100) * loan.term;
+      return loan.principal + interest;
+    }
+    function loanPaid(loanId){
+      const db = loadDB();
+      return db.repayments.filter(r=>r.loanId===loanId).reduce((s,r)=>s+r.amount,0);
+    }
+    function loanOutstanding(loan){
+      const due = loanTotalDue(loan);
+      const paid = loanPaid(loan.id);
+      const out = Math.max(0, due - paid);
+      return out;
+    }
+
+    function totals(){
+      const db = loadDB();
+      const totalContrib = db.contributions.reduce((s,c)=>s+Number(c.amount),0);
+      const totalLoans = db.loans.reduce((s,l)=>s+Number(l.principal),0);
+      const outstanding = db.loans.reduce((s,l)=>s+loanOutstanding(l),0);
+      const repaid = db.repayments.reduce((s,r)=>s+Number(r.amount),0);
+      const cash = totalContrib + repaid - totalLoans; // naive cash-on-hand
+      return { totalContrib, totalLoans, outstanding, repaid, cash };
+    }
+
+    /* ===================== STATEMENT & REPORTS ===================== */
+    function genStatement(){
+      const db = loadDB();
+      const memberId = $('#sMember').value; if(!memberId){ alert('Select a member'); return; }
+      const from = $('#sFrom').value ? new Date($('#sFrom').value) : new Date('1970-01-01');
+      const to = $('#sTo').value ? new Date($('#sTo').value) : new Date('2999-12-31');
+
+      const contrib = db.contributions.filter(c=>c.memberId===memberId && new Date(c.date)>=from && new Date(c.date)<=to);
+      const loans = db.loans.filter(l=>l.memberId===memberId && new Date(l.start)>=from && new Date(l.start)<=to);
+      const loanIds = loans.map(l=>l.id);
+      const repayments = db.repayments.filter(r=>loanIds.includes(r.loanId) && new Date(r.date)>=from && new Date(r.date)<=to);
+
+      const rows = [];
+      contrib.forEach(c=>rows.push({date:c.date,type:'Contribution',desc:c.month, debit:'', credit:c.amount, ref:c.ref}));
+      loans.forEach(l=>rows.push({date:l.start,type:'Loan Issued',desc:`${fmt(l.principal)} @ ${l.rate}% for ${l.term}m`, debit:l.principal, credit:'', ref:l.id}));
+      repayments.forEach(r=>rows.push({date:r.date,type:'Loan Repayment',desc:loanById(r.loanId)?.purpose||r.loanId, debit:'', credit:r.amount, ref:r.ref}));
+
+      rows.sort((a,b)=> new Date(a.date) - new Date(b.date));
+
+      const totalCredit = rows.reduce((s,r)=>s+Number(r.credit||0),0);
+      const totalDebit = rows.reduce((s,r)=>s+Number(r.debit||0),0);
+      const balance = totalCredit - totalDebit;
+
+      const cols = [
+        {key:'date', label:'Date'},
+        {key:'type', label:'Type'},
+        {key:'desc', label:'Details'},
+        {key:'debit', label:'Debit (KES)', render:(v)=> v?fmt(v):''},
+        {key:'credit', label:'Credit (KES)', render:(v)=> v?fmt(v):''},
+        {key:'ref', label:'Ref'},
+      ];
+      table($('#statementTable'), cols, rows);
+      $('#statementSummary').textContent = `${memberById(memberId)?.name || ''} · Credits ${fmt(totalCredit)} · Debits ${fmt(totalDebit)} · Balance ${fmt(balance)}`;
+
+      // stash last statement rows for export
+      window.__lastStatement = rows.map(r=>({...r, debit: r.debit||0, credit:r.credit||0}));
+    }
+
+    function genReport(){
+      const db = loadDB();
+      const ym = $('#repMonth').value; // YYYY-MM or ''
+      const memberId = $('#repMember').value; // '' means all
+
+      let rows = [];
+      // Contributions in month
+      db.contributions.filter(c=>(!ym || c.month===ym) && (!memberId || c.memberId===memberId)).forEach(c=>{
+        rows.push({date:c.date, member: memberById(c.memberId)?.name||c.memberId, type:'Contribution', amount:c.amount, extra:c.month});
+      });
+      // Loans issued in month
+      db.loans.filter(l=>(!ym || l.start.slice(0,7)===ym) && (!memberId || l.memberId===memberId)).forEach(l=>{
+        rows.push({date:l.start, member: memberById(l.memberId)?.name||l.memberId, type:'Loan Issued', amount:l.principal, extra:`${l.rate}% x ${l.term}m`});
+      });
+      // Repayments in month
+      db.repayments.filter(r=>(!ym || r.date.slice(0,7)===ym)).forEach(r=>{
+        const l = loanById(r.loanId); if(!l) return; if(memberId && l.memberId!==memberId) return;
+        rows.push({date:r.date, member: memberById(l.memberId)?.name||l.memberId, type:'Repayment', amount:r.amount, extra:r.ref});
+      });
+
+      rows.sort((a,b)=> new Date(a.date) - new Date(b.date));
+
+      const cols = [
+        {key:'date', label:'Date'},
+        {key:'member', label:'Member'},
+        {key:'type', label:'Type'},
+        {key:'amount', label:'Amount', render:(v)=>fmt(v)},
+        {key:'extra', label:'Notes'},
+      ];
+      table($('#reportTable'), cols, rows);
+
+      window.__lastReport = rows.map(r=>({...r, amount: Number(r.amount||0)}));
+    }
+
+    /* ===================== EXPORT HELPERS ===================== */
+    function toCSV(rows){
+      if(!rows || !rows.length) return '';
+      const headers = Object.keys(rows[0]);
+      const esc = (v) => ('"'+String(v).replaceAll('"','""')+'"');
+      const lines = [headers.map(esc).join(',')].concat(rows.map(r=>headers.map(h=>esc(r[h]??'')).join(',')));
+      return lines.join('\n');
+    }
+
+    function downloadCSV(filename, rows){
+      const csv = toCSV(rows); if(!csv){ alert('Nothing to export'); return; }
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+    }
+
+    function exportCSV(kind){
+      const db = loadDB();
+      if(kind==='members') return downloadCSV('members.csv', db.members);
+      if(kind==='contributions') return downloadCSV('contributions.csv', db.contributions);
+      if(kind==='loans') return downloadCSV('loans.csv', db.loans);
+      if(kind==='repayments') return downloadCSV('repayments.csv', db.repayments);
+    }
+
+    /* ===================== REFRESH UI ===================== */
+    function refreshAll(){
+      $('#year').textContent = new Date().getFullYear();
+      const db = loadDB();
+
+      // Populate selects
+      const memberOpts = db.members.map(m=>({value:m.id,label:`${m.name} (${m.id})`}));
+      setOptions('#cMember', memberOpts);
+      setOptions('#lMember', memberOpts);
+      setOptions('#sMember', memberOpts);
+      setOptions('#repMember', [{value:'',label:'All members'}].concat(memberOpts));
+
+      const activeLoans = db.loans.map(l=>({value:l.id,label:`${memberById(l.memberId)?.name||l.memberId} — ${l.id} (${fmt(loanOutstanding(l))} out)`}))
+      setOptions('#rLoan', activeLoans, 'Select loan');
+
+      // Tables
+      table($('#membersTable'), [
+        {key:'id', label:'Member ID'},
+        {key:'name', label:'Name'},
+        {key:'phone', label:'Phone'},
+        {key:'email', label:'Email'},
+        {key:'joinDate', label:'Join Date'},
+        {key:'id', label:'Actions', render:(v)=>`<button class='btn' onclick=\"editMember('${v}')\">Edit</button> <button class='btn danger' onclick=\"deleteMember('${v}')\">Delete</button>`},
+      ], db.members);
+
+      table($('#contribTable'), [
+        {key:'date', label:'Date'},
+        {key:'memberId', label:'Member', render:(v)=> memberById(v)?.name || v},
+        {key:'month', label:'Month'},
+        {key:'amount', label:'Amount', render:(v)=> fmt(v)},
+        {key:'ref', label:'Ref'},
+      ], db.contributions);
+
+      table($('#loansTable'), [
+        {key:'start', label:'Start'},
+        {key:'memberId', label:'Member', render:(v)=> memberById(v)?.name || v},
+        {key:'principal', label:'Principal', render:(v)=> fmt(v)},
+        {key:'rate', label:'Rate %'},
+        {key:'term', label:'Term (m)'},
+        {key:'id', label:'Outstanding', render:(v,r)=> fmt(loanOutstanding(r))},
+        {key:'status', label:'Status', render:(v,r)=> loanOutstanding(r)>0?`<span class='pill warnPill'>Active</span>`:`<span class='pill success'>Cleared</span>`},
+      ], db.loans);
+
+      table($('#repayTable'), [
+        {key:'date', label:'Date'},
+        {key:'loanId', label:'Loan', render:(v)=> v},
+        {key:'amount', label:'Amount', render:(v)=> fmt(v)},
+        {key:'ref', label:'Ref'},
+      ], db.repayments);
+
+      // KPIs
+      const t = totals();
+      $('#kpiMembers').textContent = db.members.length;
+      $('#kpiContrib').textContent = fmt(t.totalContrib);
+      $('#kpiOutstanding').textContent = fmt(t.outstanding);
+      $('#kpiCash').textContent = fmt(t.cash);
+    }
+
+    function editMember(id){
+      const m = loadDB().members.find(x=>x.id===id); if(!m) return;
+      showTab('members');
+      $('#mId').value = m.id; $('#mName').value = m.name; $('#mPhone').value = m.phone; $('#mEmail').value = m.email; $('#mJoin').value = m.joinDate;
+    }
+
+    /* ===================== EVENTS ===================== */
+    function showTab(id){
+      $$('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===id));
+      ['dashboard','members','contributions','loans','repayments','statements','reports','settings'].forEach(v=>$('#'+v).classList.toggle('hide', v!==id));
+    }
+
+    // login
+    $('#loginBtn').addEventListener('click', ()=>{
+      const u = $('#loginUser').value.trim();
+      const p = $('#loginPass').value.trim();
+      if(u===DEMO_USER.username && p===DEMO_USER.password){ setAuthed(true); }
+      else alert('Invalid credentials');
+    });
+    $('#logoutBtn').addEventListener('click', ()=>{ setAuthed(false); });
+
+    // members
+    $('#addMemberBtn').addEventListener('click', addMember);
+    $('#clearMemberBtn').addEventListener('click', clearMemberForm);
+
+    // contributions
+    $('#addContributionBtn').addEventListener('click', addContribution);
+    $('#clearContributionBtn').addEventListener('click', ()=>['#cMember','#cMonth','#cAmount','#cDate','#cRef'].forEach(s=>$(s).value=''));
+
+    // loans
+    $('#issueLoanBtn').addEventListener('click', issueLoan);
+    $('#clearLoanBtn').addEventListener('click', ()=>['#lMember','#lPrincipal','#lRate','#lTerm','#lStart','#lPurpose'].forEach(s=>$(s).value=''));
+
+    // repayments
+    $('#addRepaymentBtn').addEventListener('click', addRepayment);
+    $('#clearRepaymentBtn').addEventListener('click', ()=>['#rLoan','#rAmount','#rDate','#rRef'].forEach(s=>$(s).value=''));
+
+    // statements
+    $('#genStatementBtn').addEventListener('click', genStatement);
+    $('#printStatementBtn').addEventListener('click', ()=> window.print());
+    $('#exportStatementBtn').addEventListener('click', ()=>{
+      if(!window.__lastStatement || !window.__lastStatement.length) return alert('Generate a statement first');
+      downloadCSV('statement.csv', window.__lastStatement);
+    });
+
+    // reports
+    $('#genReportBtn').addEventListener('click', genReport);
+    $('#exportReportBtn').addEventListener('click', ()=>{
+      if(!window.__lastReport || !window.__lastReport.length) return alert('Generate a report first');
+      downloadCSV('report.csv', window.__lastReport);
+    });
+    $('#printReportBtn').addEventListener('click', ()=> window.print());
+
+    // settings
+    $('#saveSettingsBtn').addEventListener('click', ()=>{
+      const db = loadDB(); db.settings.monthly = Number($('#setMonthly').value||0); db.settings.penalty = Number($('#setPenalty').value||0); saveDB(db); alert('Settings saved');
+    });
+
+    // backup/restore
+    $('#backupBtn').addEventListener('click', backup);
+    $('#restoreBtn').addEventListener('click', ()=> $('#restoreFile').click());
+    $('#restoreFile').addEventListener('change', (e)=>{ if(e.target.files[0]) restore(e.target.files[0]); });
+
+    // tab nav
+    $$('.tab').forEach(t=> t.addEventListener('click', ()=> showTab(t.dataset.tab)));
+    $$('.menu-btn').forEach(t=> t.addEventListener('click', ()=> showTab(t.dataset.tab)));
+
+    // init
+    toggleViews();
+    refreshAll();
+  </script>
+</body>
+</html>
